@@ -53,10 +53,17 @@ function switchTab(e) {
 async function loadData() {
     showLoading(true);
     try {
-        const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getData`);
+        // Use POST instead of GET to avoid CORS issues
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: 'getData' })
+        });
         
         if (!response.ok) {
-            throw new Error('ไม่สามารถดึงข้อมูลได้');
+            throw new Error('ไม่สามารถดึงข้อมูลได้ (Status: ' + response.status + ')');
         }
 
         const result = await response.json();

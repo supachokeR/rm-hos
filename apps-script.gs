@@ -49,6 +49,8 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     
     switch(data.action) {
+      case 'getData':
+        return getSheetData(sheet);
       case 'addData':
         return addRow(sheet, data);
       case 'updateData':
