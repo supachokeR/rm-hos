@@ -1,6 +1,6 @@
 // ===== Configuration =====
 // ให้เปลี่ยนเป็น Web App URL จาก Google Apps Script
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercache/v1';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6MABQtRYpMTLL1BhCad-U33uRxdGrw2mFiT1MMSUNx5Giap9NlU772Vuo0WkS0Au5/exec';
 
 // ===== State Management =====
 let allData = [];
