@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมบริหารความเสี่ยงในรพ.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">🏥 Risk Management</h1>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span id="last-sync">อัปเดตล่าสุด: --:--</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Alert Messages -->
+        <div id="alert-container"></div>
+
+        <!-- Tab Navigation -->
+        <div class="flex gap-4 mb-6">
+            <button id="tab-view" class="tab-btn px-4 py-2 bg-blue-600 text-white rounded-lg font-medium" data-tab="view">
+                📊 ดูข้อมูล
+            </button>
+            <button id="tab-add" class="tab-btn px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-medium" data-tab="add">
+                ➕ เพิ่มรายการใหม่
+            </button>
+        </div>
+
+        <!-- View Tab -->
+        <div id="tab-content-view" class="tab-content block">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">รายการความเสี่ยง</h2>
+                    <button id="refresh-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        🔄 รีโหลด
+                    </button>
+                </div>
+                <div id="loading" class="text-center py-8 hidden">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 border-b-2">
+                                <th class="border px-4 py-2 text-left">ลำดับ</th>
+                                <th class="border px-4 py-2 text-left">รายการความเสี่ยง</th>
+                                <th class="border px-4 py-2 text-center">ระดับความเสี่ยง</th>
+                                <th class="border px-4 py-2 text-left">การควบคุม</th>
+                                <th class="border px-4 py-2 text-center">สถานะ</th>
+                                <th class="border px-4 py-2 text-center">วันที่</th>
+                                <th class="border px-4 py-2 text-center">การดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table">
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-gray-500">ไม่มีข้อมูล</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Tab -->
+        <div id="tab-content-add" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">เพิ่มรายการความเสี่ยงใหม่</h2>
+                <form id="add-form" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">รายการความเสี่ยง *</label>
+                        <input type="text" id="risk-item" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder="เช่น: ความเสี่ยงจากการติดเชื้อ">
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">ระดับความเสี่ยง *</label>
+                        <select id="risk-level" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <option value="">-- เลือก --</option>
+                            <option value="🔴 สูง">🔴 สูง (High)</option>
+                            <option value="🟡 กลาง">🟡 กลาง (Medium)</option>
+                            <option value="🟢 ต่ำ">🟢 ต่ำ (Low)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">การควบคุม *</label>
+                        <textarea id="control-measure" required rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder="อธิบายวิธีการควบคุมความเสี่ยง"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">สถานะ *</label>
+                        <select id="status" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <option value="">-- เลือก --</option>
+                            <option value="✅ ดำเนินการแล้ว">✅ ดำเนินการแล้ว</option>
+                            <option value="⏳ กำลังดำเนินการ">⏳ กำลังดำเนินการ</option>
+                            <option value="❌ ยังไม่ดำเนินการ">❌ ยังไม่ดำเนินการ</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="flex-1 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium">
+                            💾 บันทึก
+                        </button>
+                        <button type="reset" class="flex-1 px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-medium">
+                            🔄 ล้างฟอร์ม
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-bold mb-4">แก้ไขรายการ</h3>
+            <form id="edit-form" class="space-y-3">
+                <input type="hidden" id="edit-row-index">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-1">รายการความเสี่ยง</label>
+                    <input type="text" id="edit-risk-item" class="w-full px-3 py-2 border rounded text-sm" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-1">ระดับความเสี่ยง</label>
+                    <select id="edit-risk-level" class="w-full px-3 py-2 border rounded text-sm" required>
+                        <option value="🔴 สูง">🔴 สูง</option>
+                        <option value="🟡 กลาง">🟡 กลาง</option>
+                        <option value="🟢 ต่ำ">🟢 ต่ำ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-1">การควบคุม</label>
+                    <textarea id="edit-control-measure" class="w-full px-3 py-2 border rounded text-sm" rows="2" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-1">สถานะ</label>
+                    <select id="edit-status" class="w-full px-3 py-2 border rounded text-sm" required>
+                        <option value="✅ ดำเนินการแล้ว">✅ ดำเนินการแล้ว</option>
+                        <option value="⏳ กำลังดำเนินการ">⏳ กำลังดำเนินการ</option>
+                        <option value="❌ ยังไม่ดำเนินการ">❌ ยังไม่ดำเนินการ</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium">
+                        บันทึก
+                    </button>
+                    <button type="button" id="cancel-edit" class="flex-1 px-3 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm font-medium">
+                        ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
