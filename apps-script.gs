@@ -10,6 +10,20 @@
 
 const SHEET_NAME = 'Sheet1'; // เปลี่ยนชื่อ sheet ถ้าต้อง
 
+// ===== Helper: Add CORS Headers =====
+function addCorsHeaders(output) {
+  return output
+    .addHeader('Access-Control-Allow-Origin', '*')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type')
+    .addHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+}
+
+// ===== Handle OPTIONS Request (CORS Preflight) =====
+function doOptions(e) {
+  return addCorsHeaders(ContentService.createTextOutput(''));
+}
+
 // ===== Handle GET Request (Read Data) =====
 function doGet(e) {
   try {
@@ -19,9 +33,10 @@ function doGet(e) {
       return getSheetData(sheet);
     }
     
-    return ContentService
+    const output = ContentService
       .createTextOutput(JSON.stringify({success: true, message: 'API Ready'}))
       .setMimeType(ContentService.MimeType.JSON);
+    return addCorsHeaders(output);
   } catch (error) {
     return sendError(error.toString());
   }
@@ -56,16 +71,14 @@ function getSheetData(sheet) {
     // Remove header row
     const rows = data.slice(1);
     
-    return ContentService
+    const output = ContentService
       .createTextOutput(JSON.stringify({
         success: true,
         data: rows,
         count: rows.length
       }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .addHeader('Access-Control-Allow-Origin', '*')
-      .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+      .setMimeType(ContentService.MimeType.JSON);
+    return addCorsHeaders(output);
   } catch (error) {
     return sendError(error.toString());
   }
@@ -118,21 +131,21 @@ function deleteRow(sheet, data) {
 
 // ===== Helper Functions =====
 function sendSuccess(message) {
-  return ContentService
+  const output = ContentService
     .createTextOutput(JSON.stringify({
       success: true,
       message: message
     }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader('Access-Control-Allow-Origin', '*');
+    .setMimeType(ContentService.MimeType.JSON);
+  return addCorsHeaders(output);
 }
 
 function sendError(message) {
-  return ContentService
+  const output = ContentService
     .createTextOutput(JSON.stringify({
       success: false,
       error: message
     }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader('Access-Control-Allow-Origin', '*');
+    .setMimeType(ContentService.MimeType.JSON);
+  return addCorsHeaders(output);
 }
